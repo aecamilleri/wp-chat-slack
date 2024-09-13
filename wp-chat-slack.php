@@ -54,4 +54,26 @@ function mostrar_pagina_personalizada() {
     </div>';
 }
 
+function wp_chat_slack_send_end_session_message() {
+    $user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'Usuario Anónimo';
+    $session_id = isset($_SESSION['session_id']) ? $_SESSION['session_id'] : 'Desconocido';
+    $message = "*Chat finalizado por* $user_name (ID de sesión: $session_id)";
+
+    $webhook_url = get_option('wp_chat_slack_webhook');
+
+    if (!empty($webhook_url)) {
+        $payload = json_encode(['text' => $message]);
+        $args = [
+            'body' => $payload,
+            'headers' => ['Content-Type' => 'application/json'],
+            'method' => 'POST',
+            'data_format' => 'body',
+        ];
+        wp_remote_post($webhook_url, $args);
+    } else {
+        error_log('Error: El webhook de Slack no está configurado.');
+    }
+}
+
+
 ?>

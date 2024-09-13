@@ -23,6 +23,15 @@ function get_user_location($ip) {
 function wp_chat_slack_shortcode() {
     ob_start();
     
+    // HTML para la burbuja de chat
+    ?>
+    <div id="chat-icon" onclick="toggleChat()" style="position: fixed; bottom: 20px; right: 20px; cursor: pointer;">
+        <img src="<?php echo plugins_url('../img/bubble_chat.svg', __FILE__); ?>" alt="Chat" style="width: 60px; height: 60px;">
+    </div>
+
+    <div id="chat-box" style="display: none; position: fixed; bottom: 80px; right: 20px; width: 300px; height: 400px; background: #fff; border: 1px solid #ccc; padding: 10px; z-index: 1000;">
+    <?php
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_name']) && isset($_POST['user_email'])) {
         // Procesar el formulario de registro inicial
         $_SESSION['user_name'] = sanitize_text_field($_POST['user_name']);
@@ -44,9 +53,9 @@ function wp_chat_slack_shortcode() {
     }
 
     if (isset($_POST['end_session'])) {
-        // Terminar la sesión
+        wp_chat_slack_send_end_session_message(); // Llamada para enviar el mensaje a Slack
         session_destroy();
-        wp_redirect(home_url()); // Redirigir a la página de inicio o a otra página específica
+        wp_redirect(home_url());
         exit;
     }
 
@@ -100,6 +109,21 @@ function wp_chat_slack_shortcode() {
         <?php
     }
 
+    ?>
+    </div> <!-- Cerrar div de chat-box -->
+    <?php
+
+    // JavaScript para mostrar/ocultar la burbuja de chat
+    ?>
+    <script>
+        function toggleChat() {
+            var chatBox = document.getElementById('chat-box');
+            var display = chatBox.style.display;
+            chatBox.style.display = (display === 'none' || display === '') ? 'block' : 'none';
+        }
+    </script>
+    <?php
+
     return ob_get_clean();
 }
 
@@ -136,3 +160,5 @@ function wp_chat_slack_send_user_info() {
         error_log('Error: Webhook de Slack no configurado.');
     }
 }
+
+
